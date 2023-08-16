@@ -1,7 +1,10 @@
 package modhelper
 
 import (
+	"reflect"
 	"testing"
+
+	"github.com/solsw/semver"
 )
 
 func TestModuleCache(t *testing.T) {
@@ -73,6 +76,61 @@ func TestModulePathFromGoMod(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("ModulePathFromGoMod() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSemVerFromDirPath(t *testing.T) {
+	type args struct {
+		dirPath string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    semver.SemVer
+		wantErr bool
+	}{
+		{name: "empty path",
+			args: args{
+				dirPath: "",
+			},
+			wantErr: true,
+		},
+		{name: "no @v",
+			args: args{
+				dirPath: "qwerty",
+			},
+			wantErr: true,
+		},
+		{name: "empty SemVer",
+			args: args{
+				dirPath: "qwerty@v",
+			},
+			wantErr: true,
+		},
+		{name: "wrong SemVer",
+			args: args{
+				dirPath: "qwerty@vasdfgh",
+			},
+			wantErr: true,
+		},
+		{name: "valid SemVer",
+			args: args{
+				dirPath: "qwerty@v1.2.3",
+			},
+			want: semver.SemVer{Major: 1, Minor: 2, Patch: 3},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := SemVerFromDirPath(tt.args.dirPath)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("SemVerFromDirPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("SemVerFromDirPath() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/solsw/oshelper"
+	"github.com/solsw/semver"
 )
 
 // ModuleCache returns the [module cache] directory.
@@ -25,7 +26,7 @@ func ModuleCache() (string, error) {
 	var modCache string
 	goPath := os.Getenv("GOPATH")
 	if goPath != "" {
-		goPaths := strings.Split(goPath, string(filepath.ListSeparator))
+		goPaths := strings.SplitN(goPath, string(filepath.ListSeparator), 2)
 		modCache = filepath.Join(goPaths[0], "pkg", "mod")
 	} else {
 		if runtime.GOOS == "linux" {
@@ -81,4 +82,13 @@ func ModulePathFromGoMod(gomod string) (string, error) {
 		return "", err
 	}
 	return "", errors.New("no module path in '" + gomod + "'")
+}
+
+// SemVerFromDirPath extracts [semver.SemVer] from the directory path.
+func SemVerFromDirPath(dirPath string) (semver.SemVer, error) {
+	_, after, found := strings.Cut(dirPath, "@v")
+	if !found {
+		return semver.SemVer{}, fmt.Errorf("no SemVer in directory path '%s'", dirPath)
+	}
+	return semver.Parse(after)
 }
