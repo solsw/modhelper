@@ -42,7 +42,7 @@ func validPathElem(pathElem string) error {
 	return nil
 }
 
-// ValidModulePath checks if the [module path] is [valid].
+// ValidModulePath reports whether the [module path] is [valid].
 //
 // [module path]: https://go.dev/ref/mod#module-path
 // [valid]: https://go.dev/ref/mod#go-mod-file-ident
