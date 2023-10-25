@@ -43,23 +43,17 @@ func TestModulePathFromGoMod(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "1",
-			args: args{
-				goModPath: "testdata/go.test.1.mod",
-			},
+			args:    args{goModPath: "testdata/go.test.1.mod"},
 			want:    "github.com/solsw/modhelper",
 			wantErr: false,
 		},
 		{name: "2",
-			args: args{
-				goModPath: "testdata/go.test.2.mod",
-			},
+			args:    args{goModPath: "testdata/go.test.2.mod"},
 			want:    "github.com/solsw/modhelper",
 			wantErr: false,
 		},
 		{name: "3",
-			args: args{
-				goModPath: "testdata/go.test.3.mod",
-			},
+			args:    args{goModPath: "testdata/go.test.3.mod"},
 			want:    "github.com/solsw/modhelper",
 			wantErr: true,
 		},
@@ -92,33 +86,23 @@ func TestSemVerFromDirPath(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "empty path",
-			args: args{
-				dirPath: "",
-			},
+			args:    args{dirPath: ""},
 			wantErr: true,
 		},
 		{name: "no @v",
-			args: args{
-				dirPath: "qwerty",
-			},
+			args:    args{dirPath: "qwerty"},
 			wantErr: true,
 		},
 		{name: "empty SemVer",
-			args: args{
-				dirPath: "qwerty@v",
-			},
+			args:    args{dirPath: "qwerty@v"},
 			wantErr: true,
 		},
 		{name: "wrong SemVer",
-			args: args{
-				dirPath: "qwerty@vasdfgh",
-			},
+			args:    args{dirPath: "qwerty@vasdfgh"},
 			wantErr: true,
 		},
 		{name: "valid SemVer",
-			args: args{
-				dirPath: "qwerty@v1.2.3",
-			},
+			args: args{dirPath: "qwerty@v1.2.3"},
 			want: semver.SemVer{Major: 1, Minor: 2, Patch: 3},
 		},
 	}

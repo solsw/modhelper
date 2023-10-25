@@ -13,7 +13,6 @@ import (
 )
 
 // ModCacheClear clears Go [module cache].
-//
 // 'modPathPattern' - regular expression pattern (if not empty) to match [module path];
 // 'versionsToKeep' - number of [module versions] (if greater than zero) to keep;
 // 'removeAllVersions' - remove all [module versions];

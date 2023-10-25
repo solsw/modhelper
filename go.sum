@@ -1,4 +1,4 @@
-github.com/solsw/oshelper v0.1.0 h1:gzsfSWHol4OEQvMDZfk2wtbbv8iqJx+p4x9nI/IvOt8=
-github.com/solsw/oshelper v0.1.0/go.mod h1:ugrYngJMVYUv6YB8RfaemU0S7TvURhnO/xgs2Qouxi8=
-github.com/solsw/semver v1.1.4 h1:JG9T/9ViwBcBYzKIwSO5HIen50TpmsNb3f+zdNFtCEU=
-github.com/solsw/semver v1.1.4/go.mod h1:IuxrzW30q9PAvTCH9Wp50N0n1y4ZjXbK5hoAfY3nHhQ=
+github.com/solsw/oshelper v0.2.0 h1:RvjsKv/aRS0aYXcEQ7z7+QiJQuBlLCCsO205R9jvj1E=
+github.com/solsw/oshelper v0.2.0/go.mod h1:ugrYngJMVYUv6YB8RfaemU0S7TvURhnO/xgs2Qouxi8=
+github.com/solsw/semver v1.1.5 h1:KvJxIg1X4hMuR1SksE7OzNQj56j7ioiSMNrdgK6nhCM=
+github.com/solsw/semver v1.1.5/go.mod h1:IuxrzW30q9PAvTCH9Wp50N0n1y4ZjXbK5hoAfY3nHhQ=
