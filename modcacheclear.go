@@ -20,6 +20,7 @@ import (
 // it has effect only when greater than zero, and zero (or negative) keeps every
 // version (deletes nothing) - use 'removeAllVersions' to delete all versions;
 // 'removeAllVersions' - remove all [module versions] (takes precedence over 'versionsToKeep');
+// 'dryRun' - only report what would be deleted, without deleting anything;
 // 'printSkipped' - print skipped [module path]s;
 // 'w' is used (if not nil) to print text output.
 //
@@ -27,7 +28,7 @@ import (
 // [module path]: https://go.dev/ref/mod#module-path
 // [module versions]: https://go.dev/ref/mod#versions
 func ModCacheClear(modPathPattern string, versionsToKeep int, removeAllVersions bool,
-	printSkipped bool, w io.Writer) error {
+	dryRun bool, printSkipped bool, w io.Writer) error {
 	modDir, err := ModuleCache()
 	if err != nil {
 		return err
@@ -47,7 +48,7 @@ func ModCacheClear(modPathPattern string, versionsToKeep int, removeAllVersions 
 		return err
 	}
 	modCacheModules := getModCacheModules(mapModPathOsPaths)
-	err = modCacheClearPrim(modDir, reModPath, modCacheModules, versionsToKeep, removeAllVersions, printSkipped, w)
+	err = modCacheClearPrim(modDir, reModPath, modCacheModules, versionsToKeep, removeAllVersions, dryRun, printSkipped, w)
 	if err != nil {
 		return err
 	}
@@ -55,7 +56,7 @@ func ModCacheClear(modPathPattern string, versionsToKeep int, removeAllVersions 
 }
 
 func modCacheClearPrim(modDir string, reModPath *regexp.Regexp, modCacheModules []tModCacheModule,
-	versionsToKeep int, removeAllVersions bool, printSkipped bool, w io.Writer) error {
+	versionsToKeep int, removeAllVersions bool, dryRun bool, printSkipped bool, w io.Writer) error {
 	// modDir is the boundary for upward empty-directory cleanup;
 	// clean it so it can be compared with paths produced by filepath.Join/filepath.Dir.
 	modDir = filepath.Clean(modDir)
@@ -81,27 +82,33 @@ func modCacheClearPrim(modDir string, reModPath *regexp.Regexp, modCacheModules 
 				fmt.Fprint(w, "\t"+string(ver.osPath))
 			}
 			if removeAllVersions || (versionsToKeep > 0 && i < len(vers)-versionsToKeep) {
-				if err := forceRemoveAll(string(ver.osPath)); err != nil {
-					return err
-				}
-				if w != nil {
-					fmt.Fprint(w, " - deleted")
-				}
-				// Remove now-empty parent directories, walking up no further than modDir.
-				parentDir := filepath.Dir(string(ver.osPath))
-				for parentDir != modDir {
-					// The grandparent must be writable to unlink parentDir from it.
-					if err := makeWritable(filepath.Dir(parentDir)); err != nil {
-						break
+				if dryRun {
+					if w != nil {
+						fmt.Fprint(w, " - would be deleted")
 					}
-					if err := os.Remove(parentDir); err != nil {
-						// parentDir is not empty (or otherwise cannot be removed)
-						break
+				} else {
+					if err := forceRemoveAll(string(ver.osPath)); err != nil {
+						return err
 					}
 					if w != nil {
-						fmt.Fprint(w, "\n\t"+parentDir+" - deleted")
+						fmt.Fprint(w, " - deleted")
 					}
-					parentDir = filepath.Dir(parentDir)
+					// Remove now-empty parent directories, walking up no further than modDir.
+					parentDir := filepath.Dir(string(ver.osPath))
+					for parentDir != modDir {
+						// The grandparent must be writable to unlink parentDir from it.
+						if err := makeWritable(filepath.Dir(parentDir)); err != nil {
+							break
+						}
+						if err := os.Remove(parentDir); err != nil {
+							// parentDir is not empty (or otherwise cannot be removed)
+							break
+						}
+						if w != nil {
+							fmt.Fprint(w, "\n\t"+parentDir+" - deleted")
+						}
+						parentDir = filepath.Dir(parentDir)
+					}
 				}
 			}
 			if w != nil {

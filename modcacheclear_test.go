@@ -195,7 +195,7 @@ func Test_modCacheClearPrim(t *testing.T) {
 
 		modules := loadModules(t, modDir)
 		var buf bytes.Buffer
-		if err := modCacheClearPrim(modDir, nil, modules, 1, false, false, &buf); err != nil {
+		if err := modCacheClearPrim(modDir, nil, modules, 1, false, false, false, &buf); err != nil {
 			t.Fatal(err)
 		}
 		// one: keep newest (v1.10.0), delete v1.2.0 and v1.3.0.
@@ -213,7 +213,7 @@ func Test_modCacheClearPrim(t *testing.T) {
 		modules := loadModules(t, modDir)
 		var buf bytes.Buffer
 		// versionsToKeep would keep one, but removeAllVersions wins.
-		if err := modCacheClearPrim(modDir, nil, modules, 5, true, false, &buf); err != nil {
+		if err := modCacheClearPrim(modDir, nil, modules, 5, true, false, false, &buf); err != nil {
 			t.Fatal(err)
 		}
 		assertGone(t, v1, v2)
@@ -229,7 +229,7 @@ func Test_modCacheClearPrim(t *testing.T) {
 		modules := loadModules(t, modDir)
 		var buf bytes.Buffer
 		re := regexp.MustCompile("two")
-		if err := modCacheClearPrim(modDir, re, modules, 0, true, true, &buf); err != nil {
+		if err := modCacheClearPrim(modDir, re, modules, 0, true, false, true, &buf); err != nil {
 			t.Fatal(err)
 		}
 		// Only "two" matches the pattern and is removed; "one" is skipped.
@@ -248,10 +248,27 @@ func Test_modCacheClearPrim(t *testing.T) {
 
 		modules := loadModules(t, modDir)
 		var buf bytes.Buffer
-		if err := modCacheClearPrim(modDir, nil, modules, 0, false, false, &buf); err != nil {
+		if err := modCacheClearPrim(modDir, nil, modules, 0, false, false, false, &buf); err != nil {
 			t.Fatal(err)
 		}
 		assertKept(t, v1, v2)
+	})
+
+	t.Run("dry run deletes nothing", func(t *testing.T) {
+		modDir := t.TempDir()
+		v1 := mkVersion(t, modDir, "github.com/a/one", "v1.0.0")
+		v2 := mkVersion(t, modDir, "github.com/a/one", "v2.0.0")
+
+		modules := loadModules(t, modDir)
+		var buf bytes.Buffer
+		// removeAllVersions would delete both, but dryRun only reports.
+		if err := modCacheClearPrim(modDir, nil, modules, 0, true, true, false, &buf); err != nil {
+			t.Fatal(err)
+		}
+		assertKept(t, v1, v2)
+		if out := buf.String(); !strings.Contains(out, "would be deleted") {
+			t.Errorf("dry run not reported in output:\n%s", out)
+		}
 	})
 }
 
